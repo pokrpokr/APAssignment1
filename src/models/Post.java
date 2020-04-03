@@ -1,9 +1,6 @@
 package models;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-
-import exceptions.SavingReplyException;
 
 public abstract class Post {
 	private String id;
@@ -23,7 +20,7 @@ public abstract class Post {
 		this.replies = new ArrayList<Reply>();
 	}
 	
-	abstract protected boolean handleReply(Reply reply);
+	abstract public boolean handleReply(Reply reply);
 	
 	public String getPostDetails(String currentUser) {
 		String format = "%-15s%s";
@@ -36,13 +33,13 @@ public abstract class Post {
 	}
 	
 	//Soft delete
-	protected boolean deletePost() {
+	public boolean deletePost() {
 		this.isDeleted = true;
 		return isDeleted;
 	}
 	
 	//Close post
-	protected boolean closePost() {
+	public boolean closePost() {
 		this.status = "CLOSED";
 		return true;
 	}
@@ -66,5 +63,13 @@ public abstract class Post {
 			return false;
 		}
 		return true;
+	}
+	
+	public boolean isDeleted() {
+		return this.isDeleted;
+	}
+	
+	public boolean isClosed() {
+		return this.status.equals("CLOSED");
 	}
 }

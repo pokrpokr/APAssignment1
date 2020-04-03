@@ -2,8 +2,6 @@ package models;
 
 import java.util.ArrayList;
 
-import exceptions.SavingReplyException;
-
 public class Sale extends Post {
 	private double askingPrice;
 	private double highestOffer = 0.0;
@@ -43,9 +41,10 @@ public class Sale extends Post {
 	public String getReplyDetails() {
 		ArrayList<Reply> replies = this.getReplies();
 		if (replies.size() == 0) return "No Offer";
-		String offers = replies.get(0).getResponderId() + ": " + replies.get(0).getValue();
-		for (int i = 1; i < replies.size(); i++) {
-			offers += "\n" + replies.get(i).getResponderId() + ": " + replies.get(i).getValue();
+		String format = "%-10s%s";
+		String offers = String.format(format, replies.get(replies.size() - 1).getResponderId() + ": ", replies.get(replies.size() - 1).getValue());
+		for (int i = replies.size() - 2; i >= 0; i--) {
+			offers += "\n" + String.format(format, replies.get(i).getResponderId() + ": ", replies.get(i).getValue());
 		}
 		
 		return offers;
@@ -53,9 +52,15 @@ public class Sale extends Post {
 	
 	@Override
 	public boolean handleReply(Reply reply) {
-		if (reply.getResponderId().equals(this.getCreatorId()))  return false;
+		if (reply.getResponderId().equals(this.getCreatorId())) {
+			System.err.println("You are the creator, you can not reply yourself!");
+			return false;
+		} 
 		double offeredPrice = reply.getValue();
-		if (offeredPrice < (this.highestOffer + this.minimumRaise)) return false;
+		if (offeredPrice < (this.highestOffer + this.minimumRaise)) {
+			System.err.println("Minimum raise is " + this.minimumRaise + "!");
+			return false;
+		} 
 		
 		if (!this.setReplies(reply)) return false;
 		if (offeredPrice >= this.askingPrice) {

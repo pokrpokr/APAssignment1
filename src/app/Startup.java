@@ -16,7 +16,6 @@ public class Startup {
 		ArrayList<Event> events = new ArrayList<Event>();
 		ArrayList<Sale> sales = new ArrayList<Sale>();
 		ArrayList<Job> jobs = new ArrayList<Job>();
-		ArrayList<Reply> replies = new ArrayList<Reply>();
 
 		Scanner scanner = new Scanner(System.in);
 		// Print login UI
@@ -57,15 +56,21 @@ public class Startup {
 						userChoice = 0;
 						break;
 					case 5:
+						myPostDetails(username, events, sales, jobs);
 						userChoice = 0;
 						break;
 					case 6:
+						allPostsDetails(events);
+						allPostsDetails(sales);
+						allPostsDetails(jobs);
 						userChoice = 0;
 						break;
 					case 7:
+						closeMenu(scanner, username, events, sales, jobs);
 						userChoice = 0;
 						break;
 					case 8:
+						deleteMenu(scanner, username, events, sales, jobs);
 						userChoice = 0;
 						break;
 					case 9:
@@ -86,23 +91,121 @@ public class Startup {
 		} while (choice != 1 && choice != 2 );
 	}
 	
+	private static void deleteMenu(Scanner sc, String currentUser, ArrayList<Event> events, ArrayList<Sale> sales, ArrayList<Job> jobs) {
+		System.out.println("Enter Post ID: ");
+		String pId = sc.nextLine();
+		closeDeletePost(currentUser, pId, "delete", events, sales, jobs);
+	}
+	
+	private static void closeMenu(Scanner sc, String currentUser, ArrayList<Event> events, ArrayList<Sale> sales, ArrayList<Job> jobs) {
+		System.out.println("Enter Post ID: ");
+		String pId = sc.nextLine();
+		closeDeletePost(currentUser, pId, "close", events, sales, jobs);
+	}
+	
+	private static void closeDeletePost(String currentUser, String pId, String operation,ArrayList<Event> events, ArrayList<Sale> sales, ArrayList<Job> jobs) {
+		Post post = null;
+		if (pId.indexOf("E") == 0) {
+			post = findPost(events, pId);
+		} else if (pId.indexOf("S") == 0) {
+			post = findPost(sales, pId);
+		} else if (pId.indexOf("J") == 0) {
+			post = findPost(jobs, pId);
+		} else {
+			System.err.println("Wrong Post Name!");
+			return;
+		}
+		
+		if (post == null) {
+			System.err.println("Post not found!"); 
+			return;
+		}  
+		if (post.isDeleted()) {
+			System.err.println("Post already deleted!");
+			return;
+		}
+		if (!post.getCreatorId().equals(currentUser)) {
+			System.err.println("Operation denied! You are not creator.");
+			return;
+		}
+		switch (operation) {
+		case "close":
+			if (post.isClosed()) {
+				System.err.println("Post already closed!");
+				break;
+			}
+			if (post.closePost()) {
+				System.out.println("Post closed success!");
+			};
+			break;
+		case "delete":
+			if (post.deletePost()) {
+				System.out.println("Post deleted success!");
+			}
+			break;
+		default:
+			System.err.println("Wrong operation!");
+			break;
+		}
+	}
+	
+	private static <T> void allPostsDetails(ArrayList<T> posts) {
+		for (int i = 0; i < posts.size(); i++) {
+			if (!((Post) posts.get(i)).isDeleted()) {
+				System.out.print(((Post) posts.get(i)).getPostDetails(null));
+				System.out.println("-----------------------------------");
+			}
+		}
+	}
+	
+	
+	private static void myPostDetails(String currentUser, ArrayList<Event> events, ArrayList<Sale> sales, ArrayList<Job> jobs) {
+		for (int i = 0; i < events.size(); i++) {
+			if (events.get(i).isDeleted()) continue;
+			if (events.get(i).getCreatorId().equals(currentUser)) {
+				System.out.print(events.get(i).getPostDetails(currentUser));
+				System.out.println(events.get(i).getReplyDetails());
+				System.out.println("-----------------------------------");
+			}
+		}
+		for (int i = 0; i < sales.size(); i++) {
+			if (sales.get(i).isDeleted()) continue;
+			if (sales.get(i).getCreatorId().equals(currentUser)) {
+				System.out.print(sales.get(i).getPostDetails(currentUser));
+				System.out.println("-- Offer History --");
+				System.out.println(sales.get(i).getReplyDetails());
+				System.out.println("-----------------------------------");
+			}
+		}
+		for (int i = 0; i < jobs.size(); i++) {
+			if (jobs.get(i).isDeleted()) continue;
+			if (jobs.get(i).getCreatorId().equals(currentUser)) {
+				System.out.print(jobs.get(i).getPostDetails(currentUser));
+				System.out.println("-- Offer History --");
+				System.out.println(jobs.get(i).getReplyDetails());
+				System.out.println("-----------------------------------");
+			}
+		}
+	}
+	
 	private static void replyToPost(Scanner sc, String username, ArrayList<Event> events, ArrayList<Sale> sales, ArrayList<Job> jobs) {
 		String postName = null;
 		String replyType = null;
 		Post post = null;
+		Reply reply = null;
 		do {
 			System.out.print("Enter post id or 'Q' to quit: ");
 			postName = sc.nextLine();
 			
 			if (postName.indexOf("E") == 0) {
 				replyType = "event";
-				post = findEvent(events, postName);
+				post = findPost(events, postName);
 			} else if(postName.indexOf("S") == 0) {
 				replyType = "sale";
-				post = findSale(sales, postName);
+				post = findPost(sales, postName);
 			} else if(postName.indexOf("J") == 0) {
 				replyType = "job";
-				post = findJob(jobs, postName);
+				post = findPost(jobs, postName);
 			} else if (postName.indexOf("Q") == 0) {
 				return;
 			} else {
@@ -111,56 +214,67 @@ public class Startup {
 			}
 		} while (postName == null || replyType == null || post == null);
 		
+		if (post.isDeleted()) {
+			System.err.println("Post not exist!");
+			return;
+		}
+		
+		if (post.isClosed()) {
+			System.err.println("Post is closed!");
+			return;
+		}
+		
 		//Show Post Details
 		System.out.print(post.getPostDetails(username));
 		
-//		double value;
-//		System.out.print("Enter offer or 'Q' to quit: ");
-//		value = sc.nextDouble();
-//		sc.nextLine();
-//		
-//		String[] rInfo = {postName, username, replyType};
-//		Reply reply = createReply(rInfo, value);
+		double value;
+		System.out.print("Enter offer or 'Q' to quit: ");
+		value = sc.nextDouble();
+		sc.nextLine();
 		
+		String[] rInfo = {postName, username, replyType};
+		
+		reply = createReply(rInfo, value);
+		
+		if (post.handleReply(reply)) {
+			System.out.println("Offer accepted!");
+		} else {
+			System.err.println("Offer refused!");
+		}
 	}
 	
 	private static Reply createReply(String[] rInfo, double value) {
 		Reply reply = new Reply(rInfo, value);
 		return reply;
 	}
-	
-	private static Event findEvent(ArrayList<Event> posts, String pId) {
+
+	private static <T> T findPost(ArrayList<T> posts, String pId) {
 		for (int i = 0; i < posts.size(); i++) {
-			if (((String) posts.get(i).getId()).equals(pId)) return posts.get(i);
+			if (((Post) posts.get(i)).getId().equals(pId)) return posts.get(i);
 		}
 		return null;
 	}
 	
-	private static Sale findSale(ArrayList<Sale> posts, String pId) {
-		for (int i = 0; i < posts.size(); i++) {
-			if (((String) posts.get(i).getId()) == pId) return posts.get(i);
-		}
-		return null;
-	}
-	
-	private static Job findJob(ArrayList<Job> posts, String pId) {
-		for (int i = 0; i < posts.size(); i++) {
-			if (((String) posts.get(i).getId()) == pId) return posts.get(i);
-		}
-		return null;
-	}
-	
-	private static void jobDetails() {
-		
-	}
-	
-	private static void saleDetails() {
-		
-	}
-	
-	private static void eventDetails() {
-		
-	}
+//	private static Event findEvent(ArrayList<Event> posts, String pId) {
+//		for (int i = 0; i < posts.size(); i++) {
+//			if (posts.get(i).getId().equals(pId)) return posts.get(i);
+//		}
+//		return null;
+//	}
+//	
+//	private static Sale findSale(ArrayList<Sale> posts, String pId) {
+//		for (int i = 0; i < posts.size(); i++) {
+//			if (posts.get(i).getId().equals(pId)) return posts.get(i);
+//		}
+//		return null;
+//	}
+//	
+//	private static Job findJob(ArrayList<Job> posts, String pId) {
+//		for (int i = 0; i < posts.size(); i++) {
+//			if (posts.get(i).getId().equals(pId)) return posts.get(i);
+//		}
+//		return null;
+//	}
 	
 	private static void newJobPost(Scanner sc, String username, ArrayList<Job> jobs) {
 		String id = Job.generateId(jobs);

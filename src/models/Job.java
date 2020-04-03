@@ -2,8 +2,6 @@ package models;
 
 import java.util.ArrayList;
 
-import exceptions.SavingReplyException;
-
 public class Job extends Post {
 	private double proposedPrice;
 	private double lowestOffer;
@@ -25,7 +23,7 @@ public class Job extends Post {
 		}else {
 			jAmount = Integer.toString(jobAmount);
 		}
-		String jobId = "SAL"+ jAmount;
+		String jobId = "JOB"+ jAmount;
 		return jobId;
 	}
 	
@@ -46,17 +44,24 @@ public class Job extends Post {
 	public String getReplyDetails() {
 		ArrayList<Reply> replies = this.getReplies();
 		if (replies.size() == 0) return "No Offer";
-		String offers = replies.get(0).getResponderId() + ": " + replies.get(0).getValue();
-		for (int i = 1; i < replies.size(); i++) {
-			offers += "\n" + replies.get(i).getResponderId() + ": " + replies.get(i).getValue();
+		String format = "%-10s%s";
+		String offers = String.format(format, replies.get(replies.size() - 1).getResponderId() + ": ", replies.get(replies.size() - 1).getValue());
+		for (int i = replies.size() - 2; i >= 0; i--) {
+			offers += "\n" + String.format(format, replies.get(i).getResponderId() + ": ", replies.get(i).getValue());
 		}
 		
 		return offers;
 	}
 	
 	public boolean handleReply(Reply reply) {
-		if (reply.getResponderId().equals(this.getCreatorId()))  return false;
-		if (reply.getValue() >= this.lowestOffer) return false;
+		if (reply.getResponderId().equals(this.getCreatorId())) {
+			System.err.println("You are the creator, you can not reply yourself!");
+			return false;
+		} 
+		if (reply.getValue() >= this.lowestOffer) {
+			System.err.println("There is a lowest offer!");
+			return false;
+		} 
 		if (!this.setReplies(reply)) return false;
 		setLowestOffer(reply.getValue());
 		return true;

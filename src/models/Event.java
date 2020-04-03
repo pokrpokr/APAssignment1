@@ -2,8 +2,6 @@ package models;
 
 import java.util.*;
 
-import exceptions.SavingReplyException;
-
 public class Event extends Post {
 	private String venue;
 	private String date;
@@ -43,21 +41,37 @@ public class Event extends Post {
 	}
 	
 	public String getReplyDetails() {
+		String attList = "Empty";
 		ArrayList<Reply> replies = this.getReplies();
-		if (attCount == 0 || replies.size() == 0) return "Empty";
-		String attList = replies.get(0).getResponderId();
-		for (int i = 1; i < replies.size(); i++) {
-			attList = attList + ", " + replies.get(i).getResponderId();
+		if (attCount == 0 || replies.size() == 0) {
+		} else {
+			attList = replies.get(0).getResponderId();
+			for (int i = 1; i < replies.size(); i++) {
+				attList = attList + ", " + replies.get(i).getResponderId();
+			}
 		}
-		return attList;
+		String format = "%-15s%s";
+		return String.format(format, "Attendee List:", attList);
 	}
 	
 	@Override
 	public boolean handleReply(Reply reply) {
-		if (reply.getResponderId().equals(this.getCreatorId()))  return false;
-		if (reply.getValue() != 1.0) return false;
-		if (attCount >= capacity) return false;
-		if (ifReplierIncluded(reply.getResponderId())) return false;
+		if (reply.getResponderId().equals(this.getCreatorId())) {
+			System.err.println("You are the creator, you can not reply yourself!");
+			return false;
+		} 
+		if (reply.getValue() != 1.0) {
+			System.err.println("Wrong input!");
+			return false;
+		} 
+		if (attCount >= capacity) {
+			System.err.println("Event is full!");
+			return false;
+		} 
+		if (ifReplierIncluded(reply.getResponderId())) {
+			System.err.println("You can not join an same event twice!");
+			return false;
+		} 
 		// Adding the new reply
 		if (!this.setReplies(reply)) return false;
 		setAttCount(attCount + 1);
