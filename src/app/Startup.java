@@ -255,27 +255,6 @@ public class Startup {
 		return null;
 	}
 	
-//	private static Event findEvent(ArrayList<Event> posts, String pId) {
-//		for (int i = 0; i < posts.size(); i++) {
-//			if (posts.get(i).getId().equals(pId)) return posts.get(i);
-//		}
-//		return null;
-//	}
-//	
-//	private static Sale findSale(ArrayList<Sale> posts, String pId) {
-//		for (int i = 0; i < posts.size(); i++) {
-//			if (posts.get(i).getId().equals(pId)) return posts.get(i);
-//		}
-//		return null;
-//	}
-//	
-//	private static Job findJob(ArrayList<Job> posts, String pId) {
-//		for (int i = 0; i < posts.size(); i++) {
-//			if (posts.get(i).getId().equals(pId)) return posts.get(i);
-//		}
-//		return null;
-//	}
-	
 	private static void newJobPost(Scanner sc, String username, ArrayList<Job> jobs) {
 		String id = Job.generateId(jobs);
 		String title;
