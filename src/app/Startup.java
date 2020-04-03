@@ -158,7 +158,6 @@ public class Startup {
 		}
 	}
 	
-	
 	private static void myPostDetails(String currentUser, ArrayList<Event> events, ArrayList<Sale> sales, ArrayList<Job> jobs) {
 		for (int i = 0; i < events.size(); i++) {
 			if (events.get(i).isDeleted()) continue;
