@@ -28,14 +28,14 @@ public class Job extends Post {
 	}
 	
 	public String getPostDetails(String currentUser) {
-		String format = "%-15s%s";
+		String format = "%-20s%s";
 		String jobInfo = super.getPostDetails(currentUser);
 		String.format(format, "Lowest Offer:", lowestOffer);
-		jobInfo += String.format(format, "Proposed price:", proposedPrice) + "\n";
+		jobInfo += String.format(format, "Proposed price: ", "$" + proposedPrice) + "\n";
 		if (lowestOffer == proposedPrice) {
 			jobInfo += String.format(format, "Lowest Offer:", "No Offer") + "\n";
 		}else {
-			jobInfo += String.format(format, "Lowest Offer:", lowestOffer) + "\n";
+			jobInfo += String.format(format, "Lowest Offer: ", "$" + lowestOffer) + "\n";
 		}
 		
 		return jobInfo;
@@ -44,10 +44,10 @@ public class Job extends Post {
 	public String getReplyDetails() {
 		ArrayList<Reply> replies = this.getReplies();
 		if (replies.size() == 0) return "No Offer";
-		String format = "%-10s%s";
-		String offers = String.format(format, replies.get(replies.size() - 1).getResponderId() + ": ", replies.get(replies.size() - 1).getValue());
+		String format = "%-20s%s";
+		String offers = String.format(format, replies.get(replies.size() - 1).getResponderId() + ": ", "$" + replies.get(replies.size() - 1).getValue());
 		for (int i = replies.size() - 2; i >= 0; i--) {
-			offers += "\n" + String.format(format, replies.get(i).getResponderId() + ": ", replies.get(i).getValue());
+			offers += "\n" + String.format(format, replies.get(i).getResponderId() + ": ", "$" + replies.get(i).getValue());
 		}
 		
 		return offers;

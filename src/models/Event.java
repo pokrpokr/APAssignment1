@@ -31,7 +31,7 @@ public class Event extends Post {
 	}
 	
 	public String getPostDetails(String currentUser) {
-		String format = "%-15s%s";
+		String format = "%-20s%s";
 		String eveInfo = super.getPostDetails(currentUser);
 		eveInfo += String.format(format, "Venue:", venue) + "\n" 
 					+ String.format(format, "Date:", date) + "\n" 
@@ -50,7 +50,7 @@ public class Event extends Post {
 				attList = attList + ", " + replies.get(i).getResponderId();
 			}
 		}
-		String format = "%-15s%s";
+		String format = "%-20s%s";
 		return String.format(format, "Attendee List:", attList);
 	}
 	
@@ -61,7 +61,7 @@ public class Event extends Post {
 			return false;
 		} 
 		if (reply.getValue() != 1.0) {
-			System.err.println("Wrong input!");
+			System.err.println("Wrong input! For joining an event, please enter 1.");
 			return false;
 		} 
 		if (attCount >= capacity) {

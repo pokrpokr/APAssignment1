@@ -23,7 +23,7 @@ public abstract class Post {
 	abstract public boolean handleReply(Reply reply);
 	
 	public String getPostDetails(String currentUser) {
-		String format = "%-15s%s";
+		String format = "%-20s%s";
 		String information = String.format(format, "Id:", id) + "\n" 
 							+ String.format(format, "Title", title) + "\n"
 							+ String.format(format, "Description:", description) + "\n"

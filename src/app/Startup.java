@@ -8,34 +8,70 @@ import models.Job;
 import models.Post;
 import models.Reply;
 import models.Sale;
+import models.UnilinkSystem;
 
 public class Startup {
 	public static void main(String[] args) {
-//		System.out.printf("%-10s","abc");
-//		System.out.printf("%-8d",23);
 		ArrayList<Event> events = new ArrayList<Event>();
 		ArrayList<Sale> sales = new ArrayList<Sale>();
 		ArrayList<Job> jobs = new ArrayList<Job>();
-
+		events = initData(events, "event");
+		sales = initData(sales, "sale");
+		jobs = initData(jobs, "job");
+		UnilinkSystem uni = new UnilinkSystem();
+		
 		Scanner scanner = new Scanner(System.in);
 		// Print login UI
 		int choice = 0;
 		do {
-			loginPrint();
+			uni.loginPrint();
 			System.out.print("Enter your choice: ");
-			choice = scanner.nextInt();
+			try {
+				choice = scanner.nextInt();
+			}
+			catch (InputMismatchException ime) {
+				System.err.println("Wrong input! Please enter a correct number!");
+			}
+			catch (NoSuchElementException nee) {
+				System.err.println("Wrong input! Please enter a number!");
+			}
+			catch (IllegalStateException ise) {
+				System.err.println("System error! Please try again!");
+			}
+			catch (Exception e) {
+				System.err.println("System error!");
+			}
 			scanner.nextLine();
 			
 			switch (choice) {
 			case 1:
-				System.out.print("Enter username: ");
-				String username = scanner.nextLine();
+				String username = "";
+				do {
+					System.out.print("Enter username: ");
+					username = scanner.nextLine();
+					if (username.isBlank()) System.err.println("Please enter user name!");
+				} while (username.isBlank());
+				
+				
 				ArrayList<Integer> validChoices = new ArrayList<Integer>();
 				int userChoice = 0;
 				do {
-					welcomePrint(username, validChoices);
+					uni.welcomePrint(username, validChoices);
 					System.out.print("Enter your choice: ");
-					userChoice = scanner.nextInt();
+					try {
+						userChoice = scanner.nextInt();
+					} catch (InputMismatchException ime) {
+						System.err.println("Wrong input! Please enter a correct number!");
+					}
+					catch (NoSuchElementException nee) {
+						System.err.println("Wrong input! Please enter a number!");
+					}
+					catch (IllegalStateException ise) {
+						System.err.println("System error! Please try again!");
+					}
+					catch (Exception e) {
+						System.err.println("System error!");
+					}
 					scanner.nextLine();
 				
 					switch (userChoice) {
@@ -78,6 +114,7 @@ public class Startup {
 						choice = 0;
 						break;
 					default:
+						System.err.println("No such operation! Please try again!");
 						break;
 					}
 				} while (!validChoices.contains(userChoice)) ;
@@ -86,9 +123,43 @@ public class Startup {
 				System.out.println("System exited! Thanks for using UniLink system ");
 				System.exit(0);
 			default:
+				System.err.println("No such operation! Please try again!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
 				break;
 			}
 		} while (choice != 1 && choice != 2 );
+	}
+	
+	private static <T> ArrayList<T> initData(ArrayList<T> posts, String type) {
+		switch (type) {
+		case "event":
+			String[] eveInfos = {"EVE001", "New student welcome party", "A party for new student to know each others", "s3766925"};
+			Event event = new Event(eveInfos, "80.002.100", "02/04/2020", 10);
+			posts.add((T) event);
+			String[] ereInfos = {"EVE001", "s3766926", "event"};
+			Reply reply = new Reply(ereInfos, 1.0);
+			((Event) posts.get(0)).handleReply(reply);
+			break;
+		case "sale":
+			String[] salInfos = {"SAL001", "Second hand MacBook", "Half new MacBook", "s3755926"};
+			Sale sale = new Sale(salInfos, 100.0, 20.0);
+			posts.add((T) sale);
+			String[] sreInfos = {"SAL001", "s3756872", "sale"};
+			Reply reply2 = new Reply(sreInfos, 40.0);
+			((Sale) posts.get(0)).handleReply(reply2);
+			break;
+		case "job":
+			String[] jobInfos = {"JOB001", "PF mentoring", "Looking for Programming Fundamental tutor", "s3754123"};
+			Job job = new Job(jobInfos, 400);
+			posts.add((T) job);
+			String[] jreInfos = {"JOB001", "s3766925", "job"};
+			Reply reply3 = new Reply(jreInfos, 350);
+			((Job) posts.get(0)).handleReply(reply3);
+			break;
+		}
+		return posts;
 	}
 	
 	private static void deleteMenu(Scanner sc, String currentUser, ArrayList<Event> events, ArrayList<Sale> sales, ArrayList<Job> jobs) {
@@ -208,7 +279,12 @@ public class Startup {
 			} else if (postName.indexOf("Q") == 0) {
 				return;
 			} else {
-				System.err.println("Invalid input, back to menu");
+				System.err.println("Invalid Post ID, back to menu");
+				return;
+			}
+			
+			if (post == null) {
+				System.err.println("Post not found!");
 				return;
 			}
 		} while (postName == null || replyType == null || post == null);
@@ -226,10 +302,54 @@ public class Startup {
 		//Show Post Details
 		System.out.print(post.getPostDetails(username));
 		
-		double value;
-		System.out.print("Enter offer or 'Q' to quit: ");
-		value = sc.nextDouble();
-		sc.nextLine();
+		double value = 0;
+		int validInput = 0;
+		do {
+			System.out.print("Enter offer or 'Q' to quit(If you are joining an event, please enter 1): ");
+			try {
+				value = sc.nextDouble();
+			} catch (InputMismatchException ime) {
+				System.err.println("Wrong input! Please enter a correct number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (NoSuchElementException nee) {
+				System.err.println("Wrong input! Please enter a number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (IllegalStateException ise) {
+				System.err.println("System error! Please try again!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (Exception e) {
+				System.err.println("System error!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			
+			if (value < 0) {
+				System.err.println("Wrong input Please enter a correct number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				continue;
+			}
+			validInput = 1;
+		} while (validInput == 0);
 		
 		String[] rInfo = {postName, username, replyType};
 		
@@ -256,19 +376,73 @@ public class Startup {
 	
 	private static void newJobPost(Scanner sc, String username, ArrayList<Job> jobs) {
 		String id = Job.generateId(jobs);
-		String title;
-		String description;
+		String title = "";
+		String description = "";
 		String creatorId = username;
-		double proposedPrice;
+		double proposedPrice = 0;
 		
-		System.out.println("Enter details of the event below: ");
-		System.out.print("Name :");
-		title = sc.nextLine();
-		System.out.print("Description: ");
-		description = sc.nextLine();
-		System.out.print("Proposed Price: ");
-		proposedPrice = sc.nextDouble();
-		sc.nextLine();
+		int validInput = 0;
+		do {
+			System.out.println("Enter details of the sale below: ");
+			System.out.print("Name :");
+			title = sc.nextLine();
+			if (title.isBlank()) { 
+				System.err.println("Name can not be blank!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				continue;
+			}
+			
+			System.out.print("Description: ");
+			description = sc.nextLine();
+			if (description.isBlank()) {
+				System.err.println("Description can not be blank!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				continue;
+			}
+			
+			System.out.print("Proposed Price: $");
+			try {
+				proposedPrice = sc.nextDouble();
+			} catch (InputMismatchException ime) {
+				System.err.println("Wrong input! Please enter a correct number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (NoSuchElementException nee) {
+				System.err.println("Wrong input! Please enter a number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (IllegalStateException ise) {
+				System.err.println("System error! Please try again!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (Exception e) {
+				System.err.println("System error!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			
+			validInput = 1;
+		} while (validInput == 0);
+		
 		String[] postInfos = {id, title, description, creatorId};
 		try {
 			Job job = new Job(postInfos, proposedPrice);
@@ -281,86 +455,224 @@ public class Startup {
 	
 	private static void newSalePost(Scanner sc, String username, ArrayList<Sale> sales) {
 		String id = Sale.generateId(sales);
-		String title;
-		String description;
+		String title = "";
+		String description = "";
 		String creatorId = username;
-		double askingPrice;
-		double minimumRaise;
+		double askingPrice = 0.0;
+		double minimumRaise = 0.0;
 		
-		System.out.println("Enter details of the event below: ");
-		System.out.print("Name :");
-		title = sc.nextLine();
-		System.out.print("Description: ");
-		description = sc.nextLine();
-		System.out.print("Asking Price: ");
-		askingPrice = sc.nextDouble();
-		sc.nextLine();
-		System.out.print("MinimumRaise: ");
-		minimumRaise = sc.nextDouble();
-		sc.nextLine();
+		int validInput = 0;
+		do {
+			System.out.println("Enter details of the sale below: ");
+			System.out.print("Name :");
+			title = sc.nextLine();
+			if (title.isBlank()) { 
+				System.err.println("Name can not be blank!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				continue;
+			}
+			
+			System.out.print("Description: ");
+			description = sc.nextLine();
+			if (description.isBlank()) {
+				System.err.println("Description can not be blank!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				continue;
+			}
+			
+			System.out.print("Asking Price: $");
+			try {
+				askingPrice = sc.nextDouble();
+			} catch (InputMismatchException ime) {
+				System.err.println("Wrong input! Please enter a correct number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (NoSuchElementException nee) {
+				System.err.println("Wrong input! Please enter a number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (IllegalStateException ise) {
+				System.err.println("System error! Please try again!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (Exception e) {
+				System.err.println("System error!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			
+			System.out.print("MinimumRaise: $");
+			try {
+				minimumRaise = sc.nextDouble();
+			} catch (InputMismatchException ime) {
+				System.err.println("Wrong input! Please enter a correct number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (NoSuchElementException nee) {
+				System.err.println("Wrong input! Please enter a number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (IllegalStateException ise) {
+				System.err.println("System error! Please try again!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (Exception e) {
+				System.err.println("System error!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			
+			validInput = 1;
+		} while (validInput == 0);
+		
 		String[] postInfos = {id, title, description, creatorId};
 		try {
 			Sale sale = new Sale(postInfos, askingPrice, minimumRaise);
 			sales.add(sale);
 		} catch (Exception e) {
 			System.err.println("Failed! Your sale has not been created");
+			try {
+				Thread.sleep(3);
+			} catch (InterruptedException ie) {}
 		}
 		System.out.println("Success! Your sale has been created with id " + id);
 	}
 	
 	private static void newEventPost(Scanner sc, String username, ArrayList<Event> events) {
 		String id = Event.generateId(events);
-		String title;
-		String description;
+		String title = "";
+		String description = "";
 		String creatorId = username;
-		String venue;
-		String date;
-		int capacity;
+		String venue ="";
+		String date = "";
+		int capacity = 0;
 		
-		System.out.println("Enter details of the event below: ");
-		System.out.print("Name :");
-		title = sc.nextLine();
-		System.out.print("Description: ");
-		description = sc.nextLine();
-		System.out.print("Venue: ");
-		venue = sc.nextLine();
-		System.out.print("Date: ");
-		date = sc.nextLine();
-		System.out.print("Capacity: ");
-		capacity = sc.nextInt();
-		sc.nextLine();
+		int validInput = 0;
+		do {
+			System.out.println("Enter details of the event below: ");
+			System.out.print("Name :");
+			title = sc.nextLine();
+			if (title.isBlank()) { 
+				System.err.println("Name can not be blank!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				continue;
+			}
+			
+			System.out.print("Description: ");
+			description = sc.nextLine();
+			if (description.isBlank()) {
+				System.err.println("Description can not be blank!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				continue;
+			}
+			
+			System.out.print("Venue: ");
+			venue = sc.nextLine();
+			if (venue.isBlank()) {
+				System.err.println("Venue can not be blank!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				continue;
+			}
+			
+			System.out.print("Date: ");
+			date = sc.nextLine();
+			if (!date.matches("^(?:(?:31(\\/|-|\\.)(?:0?[13578]|1[02]))\\1|(?:(?:29|30)(\\/|-|\\.)(?:0?[1,3-9]|1[0-2])\\2))(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$|^(?:29(\\/|-|\\.)(?:0?2|(?:Feb))\\3(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\\d|2[0-8])(\\/|-|\\.)(?:(?:0?[1-9])|(?:1[0-2]))\\4(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$")) {
+			    System.err.println("Wrong date time!");
+			    try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+			    continue;
+			}
+			
+			System.out.print("Capacity: ");
+			try {
+				capacity = sc.nextInt();
+			} catch (InputMismatchException ime) {
+				System.err.println("Wrong input! Please enter a correct number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (NoSuchElementException nee) {
+				System.err.println("Wrong input! Please enter a number!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (IllegalStateException ise) {
+				System.err.println("System error! Please try again!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			catch (Exception e) {
+				System.err.println("System error!");
+				try {
+					Thread.sleep(3);
+				} catch (InterruptedException ie) {}
+				sc.nextLine();
+				continue;
+			}
+			
+			validInput = 1;
+		} while (validInput == 0);
+		
 		String[] postInfos = {id, title, description, creatorId};
 		try {
 			Event event = new Event(postInfos, venue, date, capacity);
 			events.add(event);
 		} catch (Exception e) {
 			System.err.println("Failed! Your event has not been created");
+			try {
+				Thread.sleep(3);
+			} catch (InterruptedException ie) {}
 		}
 		System.out.println("Success! Your event has been created with id " + id);
-	}
-	
-	private static void welcomePrint(String username, ArrayList<Integer> validChoices) {
-		System.out.println("Welcome " + username + "!");
-		System.out.println("** Student Menu **");
-		String[] options = {"New Event Post", "New Sale Post", "New Job Post", 
-				"Reply To Post", "Display My Posts", "Display All Posts", "Close Post", "Delete Post", "Log Out"};
-		for (int i = 0; i < options.length; i++) {
-			validChoices.add(i + 1);
-			System.out.println((i+1) + ". " + options[i]);
-		}
-	}
-	
-	private static void loginPrint() {
-		System.out.println("** UniLink System **");
-		System.out.println("1. Log in");
-		System.out.println("2. Quit");
-	}
-	
-	private static void readFile() {
-		
-	}
-	
-	private static void writeFile() {
-		
 	}
 }

@@ -28,23 +28,23 @@ public class Sale extends Post {
 	}
 
 	public String getPostDetails(String currentUser) {
-		String format = "%-15s%s";
+		String format = "%-20s%s";
 		String salInfo = super.getPostDetails(currentUser);
 		if (this.getCreatorId().equals(currentUser)) {
-			salInfo += String.format(format, "Asking Price:", askingPrice) + "\n";
+			salInfo += String.format(format, "Asking Price: ", "$" + askingPrice) + "\n";
 		}
-		salInfo += String.format(format, "Minimum Raise:", minimumRaise) + "\n" 
-					+ String.format(format, "Highest Offer:", highestOffer) + "\n";
+		salInfo += String.format(format, "Minimum Raise:", "$" + minimumRaise) + "\n" 
+					+ String.format(format, "Highest Offer: ", "$" + highestOffer) + "\n";
 		return salInfo;
 	}
 	
 	public String getReplyDetails() {
 		ArrayList<Reply> replies = this.getReplies();
 		if (replies.size() == 0) return "No Offer";
-		String format = "%-10s%s";
-		String offers = String.format(format, replies.get(replies.size() - 1).getResponderId() + ": ", replies.get(replies.size() - 1).getValue());
+		String format = "%-20s%s";
+		String offers = String.format(format, replies.get(replies.size() - 1).getResponderId() + ": ", "$" + replies.get(replies.size() - 1).getValue());
 		for (int i = replies.size() - 2; i >= 0; i--) {
-			offers += "\n" + String.format(format, replies.get(i).getResponderId() + ": ", replies.get(i).getValue());
+			offers += "\n" + String.format(format, replies.get(i).getResponderId() + ": ", "$" + replies.get(i).getValue());
 		}
 		
 		return offers;
@@ -58,7 +58,7 @@ public class Sale extends Post {
 		} 
 		double offeredPrice = reply.getValue();
 		if (offeredPrice < (this.highestOffer + this.minimumRaise)) {
-			System.err.println("Minimum raise is " + this.minimumRaise + "!");
+			System.err.println("Minimum raise is $" + this.minimumRaise + "!");
 			return false;
 		} 
 		
